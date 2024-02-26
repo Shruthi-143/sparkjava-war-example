@@ -1,0 +1,48 @@
+name: pst-gti-artemis-validation
+on:
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+
+jobs:
+  pst-gti-artemis:
+    runs-on: [ubuntu-latest]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup base directory
+      working-directory: /
+      run: |
+        if [ ! -d ./uni/test/app ]; then sudo mkdir -p ./uni/test/app; fi
+        sudo chown uni:uni -R /uni/test
+        sudo chmod 775 -R /uni/test
+      
+    - name: Setup log directory
+      working-directory: /var/log
+      run: |
+        if [ ! -d ./uni/test ]; then sudo mkdir -p ./uni/test; fi
+        sudo chown uni:uni -R ./uni/test
+        sudo chmod 755 -R ./uni/test
+      
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+        
+    - name: Setup Python virtual environment
+      working-directory: /uni/test/app
+      run: |
+        sudo apt install python3-venv
+        sudo python3.8 -m venv venv
+    
+    - name: Install dependencies
+      working-directory: /uni/test/app/venv
+      run: |
+        source ./bin/activate
+        pip install --upgrade pip
+        pip install wheel
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        deactivate
